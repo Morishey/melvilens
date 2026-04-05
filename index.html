@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MelviLens · FR ↔ EN Translator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 30%, #c0d4f0, #a8bbdf);
+      font-family: -apple-system, 'SF Pro Text', 'Inter', system-ui, 'Segoe UI', Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* glass card */
+    .glass-card {
+      max-width: 720px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border-radius: 48px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255,255,255,0.6);
+      border: 0.5px solid rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    /* header with toggle */
+    .glass-header {
+      padding: 1.6rem 1.8rem 0.8rem 1.8rem;
+      text-align: center;
+      border-bottom: 0.5px solid rgba(255,255,255,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .title-area {
+      text-align: left;
+    }
+
+    .glass-header h1 {
+      font-weight: 590;
+      font-size: 1.9rem;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #1c2e3f, #2c4c6e);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .glass-header p {
+      font-size: 0.75rem;
+      color: #2c3e4e;
+      opacity: 0.7;
+      font-weight: 470;
+      margin-top: 4px;
+    }
+
+    /* toggle switch */
+    .lang-toggle {
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px);
+      border-radius: 40px;
+      padding: 0.2rem;
+      display: inline-flex;
+      border: 0.5px solid rgba(255,255,255,0.6);
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 0.4rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 40px;
+      cursor: pointer;
+      color: #2c4e6e;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .toggle-btn.active {
+      background: rgba(255,255,255,0.8);
+      color: #1f3e54;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    /* main panel */
+    .main-panel {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    /* translation output */
+    .output-section {
+      order: 1;
+    }
+
+    .output-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+      color: #2c4c6e;
+      margin-bottom: 8px;
+      margin-left: 8px;
+      opacity: 0.7;
+    }
+
+    .translation-glass {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(16px);
+      border-radius: 32px;
+      padding: 1.2rem 1.4rem;
+      border: 0.5px solid rgba(255,255,255,0.7);
+      transition: all 0.2s;
+      cursor: pointer;
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .translation-glass:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .translation-text {
+      font-size: 1.05rem;
+      line-height: 1.45;
+      color: #1e2f3c;
+      font-weight: 470;
+      word-break: break-word;
+      flex: 1;
+    }
+
+    .copy-hint {
+      font-size: 0.65rem;
+      color: #4a6a84;
+      margin-top: 6px;
+      text-align: right;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .translation-glass:hover + .copy-hint, .copy-hint:hover {
+      opacity: 0.8;
+    }
+
+    /* input section */
+    .input-section {
+      order: 2;
+    }
+
+    .input-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+
+    .input-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #2c4c6e;
+      opacity: 0.7;
+    }
+
+    .voice-button {
+      background: rgba(255,255,255,0.5);
+      border: 0.5px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 40px;
+      padding: 0.3rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #1f3e54;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    .voice-button:hover {
+      background: rgba(255,255,255,0.8);
+    }
+
+    .voice-button.listening {
+      background: #ff5e5e;
+      color: white;
+      animation: gentlePulse 1.2s infinite;
+    }
+
+    @keyframes gentlePulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 94, 94, 0.3); }
+      70% { box-shadow: 0 0 0 8px rgba(255, 94, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 94, 94, 0); }
+    }
+
+    textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      border: 0.5px solid rgba(255,255,255,0.7);
+      border-radius: 28px;
+      padding: 1rem 1.2rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #1a2c3b;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+
+    textarea:focus {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(100, 150, 200, 0.6);
+      box-shadow: 0 0 0 3px rgba(70, 130, 200, 0.1);
+    }
+
+    textarea::placeholder {
+      color: #6c8eaa;
+      font-weight: 400;
+      font-size: 0.85rem;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 12px;
+      gap: 12px;
+      font-size: 0.7rem;
+      color: #2c4e6e;
+    }
+
+    .status-badge {
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px);
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-weight: 470;
+    }
+
+    .copy-action {
+      background: transparent;
+      border: none;
+      font-size: 0.7rem;
+      color: #2c6e9e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.2rem 0.6rem;
+      border-radius: 30px;
+      transition: background 0.2s;
+    }
+
+    .copy-action:hover {
+      background: rgba(255,255,255,0.5);
+    }
+
+    .example-row {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .example-chip {
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px);
+      padding: 0.25rem 0.9rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      color: #1f4e6e;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 470;
+    }
+
+    .example-chip:hover {
+      background: rgba(255,255,255,0.7);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(30, 40, 50, 0.85);
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+      font-size: 0.8rem;
+      font-weight: 470;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 550px) {
+      .glass-card {
+        border-radius: 36px;
+      }
+      .main-panel {
+        padding: 1.2rem;
+      }
+      .glass-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .title-area {
+        text-align: center;
+      }
+      .lang-toggle {
+        align-self: center;
+      }
+      .toast {
+        white-space: nowrap;
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glass-card">
+  <div class="glass-header">
+    <div class="title-area">
+      <h1>⟳ MelviLens</h1>
+      <p id="subtitleText">french ⇄ english · voice & text</p>
+    </div>
+    <div class="lang-toggle">
+      <button id="toggleFrenchBtn" class="toggle-btn active">🇫🇷 FR</button>
+      <button id="toggleEnglishBtn" class="toggle-btn">🇬🇧 EN</button>
+    </div>
+  </div>
+
+  <div class="main-panel">
+    <!-- Translation output (top) -->
+    <div class="output-section">
+      <div class="output-label" id="translationLabel">translation</div>
+      <div id="translationBox" class="translation-glass" style="cursor: pointer;">
+        <div class="translation-text" id="translationResult">✨ ready</div>
+      </div>
+      <div class="copy-hint" id="copyHintText">↻ click to copy</div>
+    </div>
+
+    <!-- Input area (bottom) -->
+    <div class="input-section">
+      <div class="input-header">
+        <span class="input-label" id="inputLabelText">type or speak</span>
+        <button id="voiceBtn" class="voice-button">🎙️ Speak</button>
+      </div>
+      <textarea id="sourceInput" rows="2" placeholder="Bonjour...  or  Hello..."></textarea>
+      
+      <div class="status-row">
+        <div class="status-badge" id="statusIndicator">⚡ ready</div>
+        <button id="copyTextBtn" class="copy-action">📋 copy</button>
+      </div>
+
+      <div class="example-row" id="exampleContainer">
+        <!-- dynamic examples based on language toggle -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastMsg" class="toast">📋 Copied</div>
+
+<script>
+  (function() {
+    // ---------- DOM elements ----------
+    const sourceTextarea = document.getElementById('sourceInput');
+    const translationDiv = document.getElementById('translationResult');
+    const translationBox = document.getElementById('translationBox');
+    const statusSpan = document.getElementById('statusIndicator');
+    const voiceButton = document.getElementById('voiceBtn');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+    const toastEl = document.getElementById('toastMsg');
+    const toggleFrenchBtn = document.getElementById('toggleFrenchBtn');
+    const toggleEnglishBtn = document.getElementById('toggleEnglishBtn');
+    
+    // UI text elements
+    const subtitleEl = document.getElementById('subtitleText');
+    const translationLabel = document.getElementById('translationLabel');
+    const copyHintSpan = document.getElementById('copyHintText');
+    const inputLabelText = document.getElementById('inputLabelText');
+    const exampleContainer = document.getElementById('exampleContainer');
+    
+    // ---------- i18n content ----------
+    const localeText = {
+      fr: {
+        subtitle: "français ⇄ anglais · voix & texte",
+        translationLabel: "traduction",
+        copyHint: "↻ cliquer pour copier",
+        inputLabel: "tapez ou parlez",
+        statusReady: "⚡ prêt",
+        statusTranslating: "🌐 traduction...",
+        statusCached: "✓ (cache)",
+        statusError: "⚠️ erreur",
+        copyToast: "📋 Copié !",
+        voiceListening: "🔴 Écoute...",
+        voiceSpeak: "🎤 Parler",
+        placeholder: "Bonjour...  ou  Hello...",
+        exampleFrench: "🇫🇷 Bonjour",
+        exampleEnglish: "🇬🇧 belle journée",
+        exampleFrench2: "🇫🇷 J'aime le design",
+        exampleEnglish2: "🇬🇧 minimal style"
+      },
+      en: {
+        subtitle: "french ⇄ english · voice & text",
+        translationLabel: "translation",
+        copyHint: "↻ click to copy",
+        inputLabel: "type or speak",
+        statusReady: "⚡ ready",
+        statusTranslating: "🌐 translating...",
+        statusCached: "✓ (cached)",
+        statusError: "⚠️ error",
+        copyToast: "📋 Copied!",
+        voiceListening: "🔴 Listening...",
+        voiceSpeak: "🎙️ Speak",
+        placeholder: "Bonjour...  or  Hello...",
+        exampleFrench: "🇫🇷 Bonjour",
+        exampleEnglish: "🇬🇧 beautiful day",
+        exampleFrench2: "🇫🇷 I love design",
+        exampleEnglish2: "🇬🇧 minimal style"
+      }
+    };
+    
+    let currentLang = 'fr'; // 'fr' or 'en'
+    
+    function updateUI() {
+      const t = localeText[currentLang];
+      subtitleEl.textContent = t.subtitle;
+      translationLabel.textContent = t.translationLabel;
+      copyHintSpan.textContent = t.copyHint;
+      inputLabelText.textContent = t.inputLabel;
+      sourceTextarea.placeholder = t.placeholder;
+      // update voice button text (if not listening)
+      if (!voiceButton.classList.contains('listening')) {
+        voiceButton.innerHTML = `🎙️ ${t.voiceSpeak}`;
+      } else {
+        voiceButton.innerHTML = `🔴 ${t.voiceListening}`;
+      }
+      // update example chips
+      updateExamples();
+      // update status text (keep same state but refresh text)
+      const currentStatus = statusSpan.innerText;
+      if (currentStatus.includes('prêt') || currentStatus.includes('ready')) {
+        statusSpan.innerHTML = t.statusReady;
+      } else if (currentStatus.includes('traduction') || currentStatus.includes('translating')) {
+        statusSpan.innerHTML = t.statusTranslating;
+      } else if (currentStatus.includes('cache') || currentStatus.includes('cached')) {
+        statusSpan.innerHTML = t.statusCached;
+      } else if (currentStatus.includes('erreur') || currentStatus.includes('error')) {
+        statusSpan.innerHTML = t.statusError;
+      }
+    }
+    
+    function updateExamples() {
+      const t = localeText[currentLang];
+      exampleContainer.innerHTML = `
+        <span class="example-chip" data-example="Bonjour, comment allez-vous ?">${t.exampleFrench}</span>
+        <span class="example-chip" data-example="What a beautiful day">${t.exampleEnglish}</span>
+        <span class="example-chip" data-example="Je vais au cinéma ce soir">${t.exampleFrench2}</span>
+        <span class="example-chip" data-example="I love minimal design">${t.exampleEnglish2}</span>
+      `;
+      // reattach event listeners to new chips
+      document.querySelectorAll('.example-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const exampleText = chip.getAttribute('data-example');
+          if (exampleText) {
+            sourceTextarea.value = exampleText;
+            if (debounceTimer) clearTimeout(debounceTimer);
+            if (currentAbort) currentAbort.abort();
+            translateText(exampleText);
+            sourceTextarea.focus();
+          }
+        });
+      });
+    }
+    
+    // ---------- Translation core (FR<->EN) ----------
+    const API_URL = 'https://api.mymemory.translated.net/get';
+    const DEBOUNCE_MS = 280;
+    const CACHE_MAX = 55;
+    let cache = new Map();
+    let debounceTimer = null;
+    let currentAbort = null;
+    
+    function showToast(msg, duration = 1600) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      window.toastTimeout = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, duration);
+    }
+    
+    function setStatus(text, isError = false, isCache = false) {
+      statusSpan.innerHTML = text;
+      statusSpan.style.background = isError ? 'rgba(255, 200, 200, 0.5)' : isCache ? 'rgba(200, 240, 200, 0.5)' : 'rgba(255,255,255,0.4)';
+    }
+    
+    function detectLanguage(text) {
+      if (!text.trim()) return 'fr';
+      const lower = text.toLowerCase();
+      const frenchAccents = /[éèêëàâôûçîïœ]/i;
+      if (frenchAccents.test(text)) return 'fr';
+      const englishWords = ['the', 'and', 'of', 'to', 'in', 'for', 'on', 'with', 'be', 'by', 'this', 'that', 'you', 'are', 'is', 'it', 'have', 'not'];
+      let englishScore = 0;
+      let words = lower.split(/\s+/);
+      for (let w of words) if (englishWords.includes(w)) englishScore++;
+      const frenchCommon = ['le', 'la', 'les', 'un', 'une', 'de', 'du', 'des', 'et', 'est', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'ce', 'cette'];
+      let frenchScore = 0;
+      for (let w of words) if (frenchCommon.includes(w)) frenchScore++;
+      if (englishScore > frenchScore + 1) return 'en';
+      if (frenchScore > englishScore + 1) return 'fr';
+      if (/^[A-Za-z0-9\s.,!?'"()]+$/.test(text) && !frenchAccents.test(text) && englishScore >= 1) return 'en';
+      return 'fr';
+    }
+    
+    async function translateText(original) {
+      const trimmed = original.trim();
+      if (trimmed === "") {
+        translationDiv.innerText = "✨ ready";
+        setStatus(localeText[currentLang].statusReady);
+        return;
+      }
+      if (cache.has(trimmed)) {
+        const cached = cache.get(trimmed);
+        translationDiv.innerText = cached.translated;
+        setStatus(`${localeText[currentLang].statusCached}`, false, true);
+        return;
+      }
+      const sourceLang = detectLanguage(trimmed);
+      const targetLang = sourceLang === 'fr' ? 'en' : 'fr';
+      const langPair = `${sourceLang}|${targetLang}`;
+      const directionIcon = sourceLang === 'fr' ? '🇫🇷→🇬🇧' : '🇬🇧→🇫🇷';
+      if (currentAbort) currentAbort.abort();
+      const controller = new AbortController();
+      currentAbort = controller;
+      const signal = controller.signal;
+      setStatus(`${localeText[currentLang].statusTranslating} ${directionIcon}`);
+      translationDiv.innerText = "🔄 ...";
+      try {
+        const params = new URLSearchParams({
+          q: trimmed,
+          langpair: langPair,
+          de: 'melvilens@demo.app',
+          mt: '1'
+        });
+        const response = await fetch(`${API_URL}?${params.toString()}`, { signal });
+        if (!response.ok) throw new Error(`API error ${response.status}`);
+        const data = await response.json();
+        let translatedText = data?.responseData?.translatedText || null;
+        if (!translatedText || translatedText === trimmed) {
+          translatedText = (sourceLang === 'fr') ? `⚠️ could not translate to English` : `⚠️ could not translate to French`;
+        }
+        let clean = translatedText.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+        translationDiv.innerText = clean;
+        cache.set(trimmed, { translated: clean, direction: directionIcon });
+        if (cache.size > CACHE_MAX) {
+          const firstKey = cache.keys().next().value;
+          cache.delete(firstKey);
+        }
+        setStatus(`✓ ${directionIcon}`, false, false);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.warn(err);
+        translationDiv.innerText = "⚠️ connection issue";
+        setStatus(localeText[currentLang].statusError, true);
+      } finally {
+        if (currentAbort === controller) currentAbort = null;
+      }
+    }
+    
+    function handleInput() {
+      const val = sourceTextarea.value;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      if (val.trim() === "") {
+        translationDiv.innerText = "✨ ready";
+        setStatus(localeText[currentLang].statusReady);
+        if (currentAbort) currentAbort.abort();
+        return;
+      }
+      debounceTimer = setTimeout(() => translateText(val), DEBOUNCE_MS);
+    }
+    
+    // ---------- Voice Recognition ----------
+    let recognition = null;
+    let isListening = false;
+    
+    function initRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        voiceButton.disabled = true;
+        voiceButton.style.opacity = '0.5';
+        showToast("Voice not supported", 1500);
+        return null;
+      }
+      const recog = new SpeechRecognition();
+      recog.continuous = false;
+      recog.interimResults = false;
+      recog.lang = 'fr-FR';
+      return recog;
+    }
+    
+    function startVoice() {
+      if (recognition) recognition.abort();
+      recognition = initRecognition();
+      if (!recognition) return;
+      recognition.onstart = () => {
+        isListening = true;
+        voiceButton.classList.add('listening');
+        voiceButton.innerHTML = `🔴 ${localeText[currentLang].voiceListening}`;
+        showToast("🎤 Speak now (French or English)", 1800);
+      };
+      recognition.onerror = (event) => {
+        isListening = false;
+        voiceButton.classList.remove('listening');
+        voiceButton.innerHTML = `🎙️ ${localeText[currentLang].voiceSpeak}`;
+        if (event.error !== 'aborted') showToast(`🎤 ${event.error === 'not-allowed' ? 'Microphone needed' : 'Try again'}`, 1500);
+      };
+      recognition.onend = () => {
+        isListening = false;
+        voiceButton.classList.remove('listening');
+        voiceButton.innerHTML = `🎙️ ${localeText[currentLang].voiceSpeak}`;
+      };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript && transcript.trim()) {
+          sourceTextarea.value = transcript;
+          if (debounceTimer) clearTimeout(debounceTimer);
+          if (currentAbort) currentAbort.abort();
+          translateText(transcript);
+          showToast(`🎤 "${transcript.substring(0, 50)}"`, 1500);
+        } else {
+          showToast("🎤 Didn't catch that", 1200);
+        }
+      };
+      recognition.start();
+    }
+    
+    function toggleVoice() {
+      if (isListening) {
+        if (recognition) recognition.stop();
+      } else {
+        startVoice();
+      }
+    }
+    
+    // ---------- Copy function ----------
+    async function copyTranslation() {
+      const text = translationDiv.innerText;
+      if (!text || text === "✨ ready" || text.includes("🔄") || text.includes("⚠️")) {
+        showToast(localeText[currentLang].copyToast === "📋 Copied!" ? "Nothing to copy" : "Rien à copier", 1000);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(localeText[currentLang].copyToast, 1200);
+        setStatus(localeText[currentLang].statusReady);
+        setTimeout(() => {
+          if (sourceTextarea.value.trim() === "") setStatus(localeText[currentLang].statusReady);
+          else setStatus("✓ ready");
+        }, 1000);
+      } catch (err) {
+        showToast("❌ Copy failed", 1000);
+      }
+    }
+    
+    // ---------- Language toggle ----------
+    function setLanguage(lang) {
+      currentLang = lang;
+      if (lang === 'fr') {
+        toggleFrenchBtn.classList.add('active');
+        toggleEnglishBtn.classList.remove('active');
+      } else {
+        toggleEnglishBtn.classList.add('active');
+        toggleFrenchBtn.classList.remove('active');
+      }
+      updateUI();
+      // Refresh status text
+      if (sourceTextarea.value.trim() === "") {
+        setStatus(localeText[currentLang].statusReady);
+      } else {
+        setStatus(localeText[currentLang].statusReady);
+      }
+    }
+    
+    // Event listeners
+    sourceTextarea.addEventListener('input', handleInput);
+    voiceButton.addEventListener('click', toggleVoice);
+    copyTextBtn.addEventListener('click', copyTranslation);
+    translationBox.addEventListener('click', copyTranslation);
+    toggleFrenchBtn.addEventListener('click', () => setLanguage('fr'));
+    toggleEnglishBtn.addEventListener('click', () => setLanguage('en'));
+    
+    // initial examples & UI
+    setLanguage('fr');
+    updateExamples();
+    // initial translation cache empty
+  })();
+</script>
+</body>
+</html>
